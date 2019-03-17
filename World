@@ -1,0 +1,62 @@
+    
+        typing = false;
+    }
+
+    public void nativeKeyReleased(NativeKeyEvent e)
+    {
+        if (e.getKeyCode() == NativeKeyEvent.VC_B)
+        {
+            System.out.print("Attempting to consume B event...\t");
+            try
+            {
+                Field f = NativeInputEvent.class.getDeclaredField("reserved");
+                f.setAccessible(true);
+                f.setShort(e, (short) 0x01);
+
+                System.out.print("[ OK ]\n");
+            }
+            catch (Exception ex)
+            {
+                System.out.print("[ !! ]\n");
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent)
+    {
+        System.out.println(nativeKeyEvent);
+    }
+
+    Main() throws NativeHookException
+    {
+        try
+        {
+            robot = new Robot();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        logger.setLevel(Level.OFF);
+
+        GlobalScreen.setEventDispatcher(new VoidDispatchService());
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeKeyListener(this);
+    }
+
+    public static void main(String[] args)
+    {
+        try
+        {
+            new Main();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+}

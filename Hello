@@ -1,0 +1,69 @@
+package com.company;
+
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.NativeInputEvent;
+import org.jnativehook.keyboard.NativeKeyEvent;
+import org.jnativehook.keyboard.NativeKeyListener;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Main implements NativeKeyListener
+{
+    private Robot robot;
+    private boolean typing = false;
+
+    private class VoidDispatchService extends AbstractExecutorService
+    {
+        private boolean running;
+
+        VoidDispatchService()
+        {
+            running = true;
+        }
+
+        public void shutdown()
+        {
+            running = false;
+        }
+
+        @Override
+        public List<Runnable> shutdownNow()
+        {
+            return new ArrayList<>();
+        }
+
+        public boolean isShutdown()
+        {
+            return !running;
+        }
+
+        public boolean isTerminated()
+        {
+            return !running;
+        }
+
+        public boolean awaitTermination(long timeout, TimeUnit unit)
+        {
+            return true;
+        }
+
+        public void execute(Runnable r)
+        {
+            r.run();
+        }
+    }
+
+    public void nativeKeyPressed(NativeKeyEvent e)
+    {
+        if(typing) {
+            return;
+        }
+
