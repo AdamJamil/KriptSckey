@@ -1,2 +1,4 @@
 *.input
 *.java
+*.o
+makefile
