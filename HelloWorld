@@ -1,0 +1,176 @@
+package com.company;
+
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.NativeInputEvent;
+import org.jnativehook.keyboard.NativeKeyEvent;
+import org.jnativehook.keyboard.NativeKeyListener;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Main implements NativeKeyListener
+{
+    private Robot robot;
+    private boolean typing = false;
+
+    private class VoidDispatchService extends AbstractExecutorService
+    {
+        private boolean running;
+
+        VoidDispatchService()
+        {
+            running = true;
+        }
+
+        public void shutdown()
+        {
+            running = false;
+        }
+
+        @Override
+        public List<Runnable> shutdownNow()
+        {
+            return new ArrayList<>();
+        }
+
+        public boolean isShutdown()
+        {
+            return !running;
+        }
+
+        public boolean isTerminated()
+        {
+            return !running;
+        }
+
+        public boolean awaitTermination(long timeout, TimeUnit unit)
+        {
+            return true;
+        }
+
+        public void execute(Runnable r)
+        {
+            r.run();
+        }
+    }
+
+    public void nativeKeyPressed(NativeKeyEvent e)
+    {
+        if (typing)
+            return;
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_SPACE)
+        {
+            try
+            {
+                Field f = NativeInputEvent.class.getDeclaredField("reserved");
+                f.setAccessible(true);
+                f.setShort(e, (short) 0x01);
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+
+            typing = true;
+
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_H);
+            robot.keyRelease(KeyEvent.VK_H);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_E);
+            robot.keyRelease(KeyEvent.VK_E);
+            robot.keyPress(KeyEvent.VK_L);
+            robot.keyRelease(KeyEvent.VK_L);
+            robot.keyPress(KeyEvent.VK_L);
+            robot.keyRelease(KeyEvent.VK_L);
+            robot.keyPress(KeyEvent.VK_O);
+            robot.keyRelease(KeyEvent.VK_O);
+            robot.keyPress(KeyEvent.VK_COMMA);
+            robot.keyRelease(KeyEvent.VK_COMMA);
+            robot.keyPress(KeyEvent.VK_SPACE);
+            robot.keyRelease(KeyEvent.VK_SPACE);
+            robot.keyPress(KeyEvent.VK_W);
+            robot.keyRelease(KeyEvent.VK_W);
+            robot.keyPress(KeyEvent.VK_O);
+            robot.keyRelease(KeyEvent.VK_O);
+            robot.keyPress(KeyEvent.VK_R);
+            robot.keyRelease(KeyEvent.VK_R);
+            robot.keyPress(KeyEvent.VK_L);
+            robot.keyRelease(KeyEvent.VK_L);
+            robot.keyPress(KeyEvent.VK_D);
+            robot.keyRelease(KeyEvent.VK_D);
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_1);
+            robot.keyRelease(KeyEvent.VK_1);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
+        }
+
+        typing = false;
+    }
+
+    public void nativeKeyReleased(NativeKeyEvent e)
+    {
+        if (e.getKeyCode() == NativeKeyEvent.VC_B)
+        {
+            System.out.print("Attempting to consume B event...\t");
+            try
+            {
+                Field f = NativeInputEvent.class.getDeclaredField("reserved");
+                f.setAccessible(true);
+                f.setShort(e, (short) 0x01);
+
+                System.out.print("[ OK ]\n");
+            }
+            catch (Exception ex)
+            {
+                System.out.print("[ !! ]\n");
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent)
+    {
+        System.out.println(nativeKeyEvent);
+    }
+
+    Main() throws NativeHookException
+    {
+        try
+        {
+            robot = new Robot();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        logger.setLevel(Level.OFF);
+
+        GlobalScreen.setEventDispatcher(new VoidDispatchService());
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeKeyListener(this);
+    }
+
+    public static void main(String[] args)
+    {
+        try
+        {
+            new Main();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+}
